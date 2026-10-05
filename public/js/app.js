@@ -44,68 +44,145 @@ const App = {
         await this.loadMetadata();
         await this.loadStations();
 
+        // Parse initial URL route from hash
+        this.handleHashRoute();
+
+        // Listen for hash changes (browser back/forward, direct links)
+        window.addEventListener('hashchange', () => {
+            this.handleHashRoute();
+            this.renderNavbar();
+            this.renderCurrentView();
+        });
+
         // Start live polling for on-air updates & studio clock
         this.startLivePolling();
 
         // Initial render
         this.renderNavbar();
-        this.renderCurrentView();
+        await this.renderCurrentView();
     },
 
-    async loadMetadata() {
-        try {
-            const meta = await API.stations.meta();
-            this.state.counties = meta.counties || [];
-            this.state.genres = meta.genres || [];
-        } catch (e) {
-            console.error('Metadata load error:', e);
+    handleHashRoute() {
+        const hash = window.location.hash.replace(/^#\/?/, '');
+        if (!hash) {
+            this.state.currentView = 'home';
+            this.state.viewParam = null;
+            return;
+        }
+
+        const parts = hash.split('/');
+        const view = parts[0] || 'home';
+        const param = parts[1] || null;
+
+        if (view === 'station' && param) {
+            this.state.currentView = 'station';
+            this.state.viewParam = param;
+        } else if (['podcasts', 'favourites', 'onboarding', 'station-admin', 'presenter-cockpit', 'super-admin', 'login'].includes(view)) {
+            this.state.currentView = view;
+            this.state.viewParam = param;
+        } else {
+            this.state.currentView = 'home';
+            this.state.viewParam = null;
         }
     },
 
-    async loadStations() {
-        try {
-            const res = await API.stations.list({
-                county: this.state.filters.county,
-                genre: this.state.filters.genre,
-                search: this.state.filters.search,
-                status: 'published'
-            });
-            this.state.stations = res.stations || [];
-        } catch (e) {
-            console.error('Failed to load stations:', e);
-            this.showToast('Could not load radio stations.', 'error');
-        }
-    },
-
-    startLivePolling() {
-        // High-precision 1-second studio clock ticker
-        setInterval(() => {
-            const clock = document.getElementById('studio-live-clock');
-            if (clock) {
-                clock.textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
-            }
-        }, 1000);
-
-        if (this.state.pollingTimer) clearInterval(this.state.pollingTimer);
-        this.state.pollingTimer = setInterval(async () => {
-            // If viewing presenter cockpit, refresh requests
-            if (this.state.currentView === 'presenter-cockpit' && this.state.stationDetail) {
-                try {
-                    const reqRes = await API.engagement.requests(this.state.stationDetail.id);
-                    // Update requests if needed
-                } catch (e) {}
-            }
-        }, 10000);
-    },
-
-    // ROUTING & NAVIGATION
     async navigate(view, param = null) {
         this.state.currentView = view;
         this.state.viewParam = param;
+
+        const newHash = param ? `#/${view}/${param}` : `#/${view === 'home' ? '' : view}`;
+        if (window.location.hash !== newHash) {
+            history.pushState(null, '', newHash);
+        }
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         this.renderNavbar();
         await this.renderCurrentView();
+    },
+
+    openWhatsApp(phone, stationName) {
+        const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '254700000000';
+        const msg = encodeURIComponent(`Hello DJ! Listening live to ${stationName} on RadioWave Kenya (https://radiowave.co.ke).`);
+        window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
+        this.showToast(`💬 Opening WhatsApp Studio Hotline for ${stationName}...`, 'info');
+    },
+
+    async shareStation(stationId) {
+        let station = this.state.stations.find(s => s.id === stationId) || this.state.stationDetail;
+        if (!station) return;
+
+        const shareUrl = `${window.location.origin}/#/station/${station.slug || station.id}`;
+        const shareData = {
+            title: `${station.name} (${station.frequency || 'Live'}) - RadioWave Kenya`,
+            text: `Tune into ${station.name} broadcasting live from ${station.county}, Kenya on RadioWave!`,
+            url: shareUrl
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+                this.showToast('✅ Shared successfully!', 'success');
+                return;
+            } catch (e) {}
+        }
+
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            this.showToast(`🔗 Link copied to clipboard: ${shareUrl}`, 'success');
+        } catch (e) {
+            this.showToast(`Station Link: ${shareUrl}`, 'info');
+        }
+    },
+
+    async filterNearMe() {
+        const btn = document.getElementById('near-me-btn');
+        if (btn) btn.innerHTML = '<span>⏳</span> Locating...';
+
+        if (!navigator.geolocation) {
+            this.showToast('Geolocation is not supported by your browser.', 'warning');
+            if (btn) btn.innerHTML = '<span>📍</span> Near Me';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+
+                const counties = [
+                    { name: 'Nairobi', lat: -1.286389, lon: 36.817223 },
+                    { name: 'Mombasa', lat: -4.043477, lon: 39.668206 },
+                    { name: 'Kisumu', lat: -0.091702, lon: 34.767956 },
+                    { name: 'Nakuru', lat: -0.303099, lon: 36.080025 },
+                    { name: 'Machakos', lat: -1.517684, lon: 37.263415 },
+                    { name: 'Kiambu', lat: -1.1714, lon: 36.8356 },
+                    { name: 'Uasin Gishu', lat: 0.5143, lon: 35.2698 },
+                    { name: 'Nyeri', lat: -0.4201, lon: 36.9476 },
+                    { name: 'Meru', lat: 0.0463, lon: 37.6559 }
+                ];
+
+                let nearest = counties[0];
+                let minDist = Infinity;
+
+                counties.forEach(c => {
+                    const dist = Math.hypot(lat - c.lat, lon - c.lon);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearest = c;
+                    }
+                });
+
+                if (btn) btn.innerHTML = `<span>📍</span> ${nearest.name}`;
+                this.setFilter('county', nearest.name);
+                this.showToast(`📍 Showing radio stations in ${nearest.name} County based on your location.`, 'success');
+            },
+            (err) => {
+                this.showToast('Could not access location. Showing all Kenya stations.', 'info');
+                if (btn) btn.innerHTML = '<span>📍</span> Near Me';
+            },
+            { timeout: 8000 }
+        );
     },
 
     async renderCurrentView() {

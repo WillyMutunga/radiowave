@@ -76,6 +76,9 @@ const Components = {
                     <!-- Filter Chips: Kenyan Counties -->
                     <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                         <span class="text-xs text-slate-400 uppercase font-bold pr-2 flex-shrink-0">Counties:</span>
+                        <button onclick="window.App.filterNearMe()" id="near-me-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 flex items-center gap-1 shadow-xs" title="Find stations in your current location">
+                            <span>📍</span> Near Me
+                        </button>
                         <button onclick="window.App.setFilter('county', '')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${!activeFilters.county ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'}">
                             All Kenya (${stations.length})
                         </button>
@@ -137,12 +140,18 @@ const Components = {
                                 </div>
                             </div>
 
-                            <div class="pt-4 flex items-center gap-2">
+                            <div class="pt-4 flex items-center gap-1.5">
                                 <button onclick="window.App.playStationById(${station.id})" class="flex-1 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition duration-150 shadow-xs active:scale-95 cursor-pointer group/btn">
                                     <svg class="w-4 h-4 fill-current transition" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                    <span>Play Live</span>
+                                    <span>Play</span>
                                 </button>
-                                <button onclick="window.App.navigate('station', '${station.slug}')" class="px-3 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer" title="Station Guide & Architecture">
+                                <button onclick="window.App.openWhatsApp('${station.contact_phone || '+254700000000'}', '${station.name.replace(/'/g, "\\'")}')" class="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-500 text-emerald-600 hover:text-white transition cursor-pointer" title="Chat with Studio on WhatsApp">
+                                    💬
+                                </button>
+                                <button onclick="window.App.shareStation(${station.id})" class="p-2.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 transition cursor-pointer" title="Share Station Link">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                                </button>
+                                <button onclick="window.App.navigate('station', '${station.slug}')" class="px-2.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition cursor-pointer" title="Station Guide & Architecture">
                                     Guide
                                 </button>
                                 <button onclick="window.App.toggleFavourite(${station.id})" class="p-2.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Add to Favourites">
@@ -199,16 +208,22 @@ const Components = {
                             <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">${station.name}</h1>
                             <p class="text-slate-200 text-sm md:text-base max-w-3xl leading-relaxed">${station.description || station.tagline || ''}</p>
 
-                            <div class="flex items-center gap-3 pt-4">
+                            <div class="flex flex-wrap items-center gap-3 pt-4">
                                 <button onclick="window.App.playStationById(${station.id})" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-2 shadow-lg shadow-blue-500/30 transition transform hover:scale-105 active:scale-95 cursor-pointer">
                                     <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                     Listen Live
                                 </button>
+                                <button onclick="window.App.openWhatsApp('${station.contact_phone || '+254700000000'}', '${station.name.replace(/'/g, "\\'")}')" class="px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 transition active:scale-95 cursor-pointer">
+                                    <span>💬</span> WhatsApp Studio
+                                </button>
                                 <button onclick="window.App.openRequestModal(${station.id})" class="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-blue-300 font-semibold transition border border-blue-400/30 backdrop-blur-sm flex items-center gap-2 cursor-pointer">
                                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-                                    Song Request / Dedication
+                                    Song Request
                                 </button>
-                                <button onclick="window.App.toggleFavourite(${station.id})" class="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-rose-400 transition border border-white/20 backdrop-blur-sm cursor-pointer">
+                                <button onclick="window.App.shareStation(${station.id})" class="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition border border-white/20 backdrop-blur-sm cursor-pointer" title="Share Station">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                                </button>
+                                <button onclick="window.App.toggleFavourite(${station.id})" class="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-rose-400 transition border border-white/20 backdrop-blur-sm cursor-pointer" title="Add to Favourites">
                                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                                 </button>
                             </div>

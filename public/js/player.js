@@ -13,6 +13,9 @@ const Player = {
     reconnectAttempts: 0,
     maxReconnectAttempts: 5,
     streamRoute: 'direct_cdn', // 'direct_cdn' or 'secure_proxy'
+    sleepTimerSeconds: 0,
+    sleepTimerInterval: null,
+    isLowDataMode: false,
 
     init() {
         this.audio.preload = 'none';
@@ -162,88 +165,87 @@ const Player = {
                     }
                 });
             } else if (this.audio.canPlayType('application/vnd.apple.mpegurl')) {
-                // Native Safari HLS support
+                // Native Safari / iOS HLS
                 this.audio.src = resolved.url;
-                this.audio.load();
                 this.startPlayPromise();
             } else {
-                // Fallback to proxy
-                this.streamRoute = 'secure_proxy';
-                this.audio.src = `/api/stream-proxy?url=${encodeURIComponent(resolved.url)}`;
-                this.audio.load();
-                this.startPlayPromise();
+                this.fallbackToProxy();
             }
         } else {
-            // 2. Standard MP3 / AAC Stream Playback
+            // 2. Standard MP3 / AAC Audio Stream
             this.audio.src = resolved.url;
-            this.audio.load();
             this.startPlayPromise();
         }
 
         this.updateMediaSession(station);
+        this.updateUI();
     },
 
-    playCustomAudio(audioUrl, title, subtitle) {
-        if (!audioUrl) return;
+    playCustomAudio(url, title, artist = 'RadioWave') {
+        if (!url) return;
+        this.currentStation = {
+            id: 0,
+            name: title,
+            now_track: title,
+            now_artist: artist,
+            frequency: 'On Demand',
+            county: 'Kenya',
+            logo_url: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=200',
+            stream_url: url,
+            bitrate: 128
+        };
+
         if (this.hls) {
             this.hls.destroy();
             this.hls = null;
         }
+
         this.audio.pause();
-        this.currentStation = {
-            id: 0,
-            name: title || 'Audio Track',
-            frequency: subtitle || 'Podcast Episode',
-            logo_url: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=200',
-            now_track: title,
-            now_artist: subtitle,
-            bitrate: 128
-        };
+        this.audio.src = url;
         this.streamRoute = 'direct_cdn';
-        this.audio.src = audioUrl;
-        this.audio.load();
         this.startPlayPromise();
-        this.setState('loading');
-        this.updateMediaSession(this.currentStation);
+        this.updateUI();
     },
 
     startPlayPromise() {
-        const playPromise = this.audio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                this.isPlaying = true;
-                this.isBuffering = false;
-                this.setState('playing');
-            }).catch((err) => {
-                console.warn('[Player] Playback promise error:', err);
-                if (this.streamRoute === 'direct_cdn') {
-                    this.fallbackToProxy();
-                } else {
-                    this.isBuffering = false;
-                    this.setState('paused');
-                }
-            });
-        }
+        this.audio.play().then(() => {
+            this.isPlaying = true;
+            this.isBuffering = false;
+            this.setState('playing');
+        }).catch(err => {
+            console.warn('[Player] Initial playback promise rejected:', err);
+            // Autoplay policies might block initial audio until user touches UI
+            if (err.name === 'NotAllowedError') {
+                this.setState('paused');
+            } else {
+                this.fallbackToProxy();
+            }
+        });
     },
 
     fallbackToProxy() {
         if (!this.currentStation) return;
-        if (this.streamRoute !== 'secure_proxy') {
-            console.log(`[Player] Fallback: Routing ${this.currentStation.name} through Secure Edge Proxy...`);
-            this.playStation(this.currentStation, true);
-        } else {
+        if (this.streamRoute === 'secure_proxy' && this.reconnectAttempts >= this.maxReconnectAttempts) {
             this.handleStreamError();
-        }
-    },
-
-    togglePlay() {
-        if (!this.currentStation) {
-            if (window.App && window.App.state && window.App.state.stations.length > 0) {
-                this.playStation(window.App.state.stations[0]);
-            }
             return;
         }
 
+        console.log(`[Player] Engaging HTTPS secure proxy wrap for ${this.currentStation.name}...`);
+        this.streamRoute = 'secure_proxy';
+        const proxyUrl = `/api/stream-proxy?station_id=${this.currentStation.id || ''}&name=${encodeURIComponent(this.currentStation.name || 'Station')}&retry=${this.reconnectAttempts}&t=${Date.now()}`;
+        
+        if (this.hls) {
+            this.hls.destroy();
+            this.hls = null;
+        }
+
+        this.audio.src = proxyUrl;
+        this.audio.load();
+        this.startPlayPromise();
+    },
+
+    togglePlay() {
+        if (!this.currentStation) return;
         if (this.isPlaying) {
             this.pause();
         } else {
@@ -294,6 +296,84 @@ const Player = {
             this.isMuted = true;
         }
         this.updateVolumeUI();
+    },
+
+    // SLEEP TIMER
+    setSleepTimer(minutes) {
+        this.cancelSleepTimer();
+        if (minutes <= 0) {
+            if (window.App && window.App.showToast) {
+                window.App.showToast('⏱️ Sleep Timer turned off.', 'info');
+            }
+            this.updateSleepTimerUI();
+            return;
+        }
+
+        this.sleepTimerSeconds = minutes * 60;
+        if (window.App && window.App.showToast) {
+            window.App.showToast(`⏱️ Sleep Timer set for ${minutes} minutes. Playback will stop automatically.`, 'success');
+        }
+
+        this.sleepTimerInterval = setInterval(() => {
+            this.sleepTimerSeconds--;
+            
+            // Fade out audio over the final 20 seconds
+            if (this.sleepTimerSeconds <= 20 && this.sleepTimerSeconds > 0) {
+                const fadeFactor = this.sleepTimerSeconds / 20;
+                this.audio.volume = Math.max(0.05, this.volume * fadeFactor);
+            }
+
+            if (this.sleepTimerSeconds <= 0) {
+                this.cancelSleepTimer();
+                this.pause();
+                this.audio.volume = this.volume; // Reset volume for next time
+                if (window.App && window.App.showToast) {
+                    window.App.showToast('🌙 Sleep Timer completed. Radio playback paused.', 'info');
+                }
+            }
+            this.updateSleepTimerUI();
+        }, 1000);
+
+        this.updateSleepTimerUI();
+    },
+
+    cancelSleepTimer() {
+        if (this.sleepTimerInterval) {
+            clearInterval(this.sleepTimerInterval);
+            this.sleepTimerInterval = null;
+        }
+        this.sleepTimerSeconds = 0;
+        this.updateSleepTimerUI();
+    },
+
+    updateSleepTimerUI() {
+        const badge = document.getElementById('player-sleep-badge');
+        const text = document.getElementById('player-sleep-text');
+        if (!badge || !text) return;
+
+        if (this.sleepTimerSeconds > 0) {
+            badge.classList.remove('hidden');
+            const mins = Math.floor(this.sleepTimerSeconds / 60);
+            const secs = this.sleepTimerSeconds % 60;
+            text.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        } else {
+            badge.classList.add('hidden');
+        }
+    },
+
+    toggleSleepTimerMenu() {
+        const menu = document.getElementById('player-sleep-menu');
+        if (menu) {
+            menu.classList.toggle('hidden');
+        }
+    },
+
+    toggleLowDataMode() {
+        this.isLowDataMode = !this.isLowDataMode;
+        if (window.App && window.App.showToast) {
+            window.App.showToast(this.isLowDataMode ? '📶 Data Saver ON (Optimized for low mobile bandwidth)' : '📶 High Fidelity Audio Mode', 'info');
+        }
+        this.updateUI();
     },
 
     handleStreamError() {
@@ -456,6 +536,8 @@ const Player = {
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = this.isPlaying ? 'playing' : 'paused';
         }
+
+        this.updateSleepTimerUI();
     },
 
     updateVolumeUI() {

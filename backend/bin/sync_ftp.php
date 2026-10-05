@@ -4,14 +4,24 @@ $ftp_user = "radio@radiowave.co.ke";
 $ftp_pass = "William#20";
 
 echo "Connecting to $ftp_server...\n";
-$conn_id = @ftp_ssl_connect($ftp_server, 21, 15) ?: @ftp_connect($ftp_server, 21, 15);
+$conn_id = @ftp_connect($ftp_server, 21, 20);
+if (!$conn_id) {
+    $conn_id = @ftp_ssl_connect($ftp_server, 21, 20);
+}
 
 if (!$conn_id) {
     echo "ERROR: Could not connect to FTP host $ftp_server.\n";
     exit(1);
 }
 
-if (!@ftp_login($conn_id, $ftp_user, $ftp_pass)) {
+$login = @ftp_login($conn_id, $ftp_user, $ftp_pass);
+if (!$login) {
+    // Retry once after 2 seconds
+    sleep(2);
+    $login = @ftp_login($conn_id, $ftp_user, $ftp_pass);
+}
+
+if (!$login) {
     echo "ERROR: FTP login failed for $ftp_user.\n";
     exit(1);
 }
@@ -22,6 +32,8 @@ echo "SUCCESS: Logged in to FTP.\n";
 $files_to_sync = [
     'public/css/styles.css' => 'public/css/styles.css',
     'public/index.html' => 'public/index.html',
+    'public/manifest.json' => 'public/manifest.json',
+    'public/sw.js' => 'public/sw.js',
     'public/js/components.js' => 'public/js/components.js',
     'public/js/app.js' => 'public/js/app.js',
     'public/js/player.js' => 'public/js/player.js',

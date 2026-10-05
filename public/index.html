@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RadioWave Kenya - Live Radio Streaming & Discovery Platform</title>
+    
+    <!-- PWA & Mobile Web App Meta -->
+    <meta name="description" content="Direct IP Radio Broadcast & Discovery Platform for all 47 Kenyan Counties. Listen to your favourite stations live with high fidelity.">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="RadioWave">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+
+    <!-- OpenGraph / Social Sharing Meta -->
+    <meta property="og:title" content="RadioWave Kenya - Live Digital Radio">
+    <meta property="og:description" content="Direct IP Radio Streaming & Discovery across Kenya with direct CDN offloading & live studio engagement.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://radiowave.co.ke">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -36,7 +54,7 @@
     <!-- HLS.js for HTTP Live Streaming (.m3u8 manifests) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.6.13/hls.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/styles.css?v=3.0">
+    <link rel="stylesheet" href="/css/styles.css?v=3.1">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z'/></svg>">
 </head>
 <body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-32">
@@ -77,6 +95,7 @@
                     <div class="flex items-center gap-2">
                         <span id="player-station-name" class="font-extrabold text-slate-900 text-sm truncate">Station Name</span>
                         <span id="player-bitrate-badge" class="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 font-mono text-[10px] font-bold border border-blue-100">128k</span>
+                        <span id="player-sleep-badge" class="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 font-mono text-[9px] font-bold border border-amber-200 hidden">⏱️ <span id="player-sleep-text">15:00</span></span>
                         <span id="player-route-badge" class="px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-[9px] font-bold border border-emerald-200 hidden sm:inline-block">DIRECT CDN</span>
                     </div>
                     <p id="player-station-track" class="text-xs text-slate-500 truncate font-medium">Live Audio Stream</p>
@@ -87,7 +106,7 @@
             <!-- Center: Audio Controls & 4-Bar Waveform Equalizer -->
             <div class="flex flex-col items-center justify-center gap-1 flex-1">
                 <div class="flex items-center gap-4">
-                    <button id="player-play-btn" class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg shadow-blue-600/25 transition transform hover:scale-105 active:scale-95">
+                    <button id="player-play-btn" class="w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg shadow-blue-600/25 transition transform hover:scale-105 active:scale-95 cursor-pointer">
                         <div id="player-play-icon">
                             <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </div>
@@ -103,15 +122,37 @@
                 </div>
             </div>
 
-            <!-- Right: Volume Slider & Quick Actions (Hidden on mobile <640px) -->
-            <div class="flex items-center justify-end gap-3 w-1/3">
+            <!-- Right: Volume Slider, Sleep Timer & Data Saver (Hidden on mobile <640px) -->
+            <div class="flex items-center justify-end gap-2.5 w-1/3">
+                <!-- Sleep Timer Trigger & Dropdown -->
+                <div class="relative">
+                    <button onclick="window.Player.toggleSleepTimerMenu()" title="Sleep Timer" class="p-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition border border-slate-200 cursor-pointer">
+                        ⏱️
+                    </button>
+                    <!-- Sleep Timer Menu -->
+                    <div id="player-sleep-menu" class="hidden absolute bottom-12 right-0 w-44 rounded-2xl bg-white border border-slate-200 shadow-xl p-2 space-y-1 z-50 text-xs text-slate-700">
+                        <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sleep Timer</div>
+                        <button onclick="window.Player.setSleepTimer(15); window.Player.toggleSleepTimerMenu()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition font-medium">15 Minutes</button>
+                        <button onclick="window.Player.setSleepTimer(30); window.Player.toggleSleepTimerMenu()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition font-medium">30 Minutes</button>
+                        <button onclick="window.Player.setSleepTimer(45); window.Player.toggleSleepTimerMenu()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition font-medium">45 Minutes</button>
+                        <button onclick="window.Player.setSleepTimer(60); window.Player.toggleSleepTimerMenu()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition font-medium">1 Hour</button>
+                        <button onclick="window.Player.setSleepTimer(0); window.Player.toggleSleepTimerMenu()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 transition font-medium border-t border-slate-100">Turn Off Timer</button>
+                    </div>
+                </div>
+
+                <!-- Low Data Mode Toggle -->
+                <button onclick="window.Player.toggleLowDataMode()" title="Toggle Data Saver Mode" class="p-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition border border-slate-200 cursor-pointer hidden sm:block">
+                    📶
+                </button>
+
+                <!-- Volume Slider -->
                 <div class="hidden sm:flex items-center gap-2 bg-slate-100/90 px-3 py-1.5 rounded-xl border border-slate-200">
-                    <button id="player-volume-btn" class="text-slate-500 hover:text-blue-600 transition">
+                    <button id="player-volume-btn" class="text-slate-500 hover:text-blue-600 transition cursor-pointer">
                         <div id="player-volume-icon">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
                         </div>
                     </button>
-                    <input id="player-volume-slider" type="range" min="0" max="100" value="85" class="w-16 md:w-24 accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+                    <input id="player-volume-slider" type="range" min="0" max="100" value="85" class="w-16 md:w-20 accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer">
                 </div>
             </div>
 
@@ -123,7 +164,7 @@
         <div class="relative w-full max-w-md rounded-3xl bg-white border border-slate-200 shadow-2xl p-7 md:p-8 space-y-6 text-left transform scale-95 transition-transform duration-300" id="login-modal-card">
             
             <!-- Close Button -->
-            <button onclick="window.App.closeLoginModal()" class="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+            <button onclick="window.App.closeLoginModal()" class="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
 
@@ -140,15 +181,15 @@
             <div class="space-y-2">
                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block text-center">Quick Demo Accounts:</span>
                 <div class="grid grid-cols-3 gap-1.5">
-                    <button type="button" onclick="window.App.fillDemoLogin('station_admin')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-center transition group">
+                    <button type="button" onclick="window.App.fillDemoLogin('station_admin')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-center transition group cursor-pointer">
                         <span class="text-base block mb-0.5">📻</span>
                         <span class="text-[11px] font-bold text-slate-700 group-hover:text-blue-600 block">Station Owner</span>
                     </button>
-                    <button type="button" onclick="window.App.fillDemoLogin('presenter')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-center transition group">
+                    <button type="button" onclick="window.App.fillDemoLogin('presenter')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-center transition group cursor-pointer">
                         <span class="text-base block mb-0.5">🎙️</span>
                         <span class="text-[11px] font-bold text-slate-700 group-hover:text-blue-600 block">Studio DJ</span>
                     </button>
-                    <button type="button" onclick="window.App.fillDemoLogin('super_admin')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-center transition group">
+                    <button type="button" onclick="window.App.fillDemoLogin('super_admin')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-center transition group cursor-pointer">
                         <span class="text-base block mb-0.5">⚡</span>
                         <span class="text-[11px] font-bold text-slate-700 group-hover:text-blue-600 block">Super Admin</span>
                     </button>
@@ -204,7 +245,7 @@
                 <button 
                     type="submit" 
                     id="login-submit-btn" 
-                    class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-600/25 transition transform active:scale-[0.98] flex items-center justify-center gap-2"
+                    class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm shadow-lg shadow-blue-600/25 transition transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
                 >
                     <span id="login-btn-text">Authenticate & Open Console</span>
                     <div id="login-spinner" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></div>
@@ -212,15 +253,26 @@
             </form>
 
             <div class="text-center text-xs text-slate-500 pt-2 border-t border-slate-200">
-                Are you a listener? <button onclick="window.App.closeLoginModal()" class="text-blue-600 hover:underline font-semibold">Listen freely without logging in</button>
+                Are you a listener? <button onclick="window.App.closeLoginModal()" class="text-blue-600 hover:underline font-semibold cursor-pointer">Listen freely without logging in</button>
             </div>
         </div>
     </div>
 
     <!-- Application Scripts -->
-    <script src="/js/api.js?v=3.0"></script>
-    <script src="/js/player.js?v=3.0"></script>
-    <script src="/js/components.js?v=3.0"></script>
-    <script src="/js/app.js?v=3.0"></script>
+    <script src="/js/api.js?v=3.1"></script>
+    <script src="/js/player.js?v=3.1"></script>
+    <script src="/js/components.js?v=3.1"></script>
+    <script src="/js/app.js?v=3.1"></script>
+
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js?v=3.1')
+                    .then((reg) => console.log('[PWA] Service Worker registered with scope:', reg.scope))
+                    .catch((err) => console.warn('[PWA] Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>
