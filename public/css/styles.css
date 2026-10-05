@@ -1,0 +1,138 @@
+/* public/css/styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    --primary: #f97316;
+    --primary-hover: #ea580c;
+    --primary-glow: rgba(249, 115, 22, 0.25);
+    --secondary: #06b6d4;
+    --dark-bg: #0b0f19;
+    --card-bg: #111827;
+    --card-border: #1f2937;
+    --player-bg: rgba(17, 24, 39, 0.92);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--dark-bg);
+    color: #f3f4f6;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .brand-font {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #0b0f19;
+}
+::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #f97316;
+}
+
+/* Glassmorphism */
+.glass {
+    background: rgba(17, 24, 39, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-player {
+    background: var(--player-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Pulsing Live Badge */
+.live-pulse {
+    animation: pulseGlow 1.8s infinite;
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Audio Visualizer Waveform Equalizer Bars */
+.equalizer {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 20px;
+}
+
+.equalizer-bar {
+    width: 3px;
+    background: linear-gradient(to top, #f97316, #fbbf24);
+    border-radius: 2px;
+    height: 4px;
+    transition: height 0.15s ease;
+}
+
+.equalizer.playing .equalizer-bar:nth-child(1) { animation: bounce 0.8s ease infinite alternate; }
+.equalizer.playing .equalizer-bar:nth-child(2) { animation: bounce 1.1s ease infinite alternate 0.1s; }
+.equalizer.playing .equalizer-bar:nth-child(3) { animation: bounce 0.6s ease infinite alternate 0.2s; }
+.equalizer.playing .equalizer-bar:nth-child(4) { animation: bounce 1.3s ease infinite alternate 0.15s; }
+.equalizer.playing .equalizer-bar:nth-child(5) { animation: bounce 0.9s ease infinite alternate 0.25s; }
+
+@keyframes bounce {
+    0% { height: 3px; }
+    100% { height: 18px; }
+}
+
+/* Card Hover Transitions */
+.station-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.station-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(249, 115, 22, 0.4);
+    box-shadow: 0 12px 24px -10px rgba(249, 115, 22, 0.2);
+}
+
+/* Glow Elements */
+.glow-primary {
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+/* Toast Notifications */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.toast {
+    animation: slideIn 0.3s ease forwards;
+}
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

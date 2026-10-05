@@ -1,0 +1,36 @@
+name: Deploy RadioWave to cPanel (radiowave.co.ke)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  deploy_cpanel_ftp:
+    name: Deploy to cPanel (FTP / FTPS)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📂 Sync Files to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          server-dir: ./
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            infrastructure/**
+            deploy.zip
+            unzip.php
+            *.docx
+            README.md

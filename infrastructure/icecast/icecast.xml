@@ -1,0 +1,71 @@
+<icecast>
+    <location>Nairobi, Kenya</location>
+    <admin>admin@radiowave.co.ke</admin>
+    <hostname>stream.radiowave.co.ke</hostname>
+
+    <limits>
+        <clients>2500</clients>
+        <sources>100</sources>
+        <queue-size>524288</queue-size>
+        <client-timeout>30</client-timeout>
+        <header-timeout>15</header-timeout>
+        <source-timeout>10</source-timeout>
+        <burst-on-connect>1</burst-on-connect>
+        <burst-size>65535</burst-size>
+    </limits>
+
+    <authentication>
+        <source-password>radiowave_source_pass_2026</source-password>
+        <relay-password>radiowave_relay_pass_2026</relay-password>
+        <admin-user>admin</admin-user>
+        <admin-password>radiowave_admin_pass_2026</admin-password>
+    </authentication>
+
+    <listen-socket>
+        <port>8000</port>
+    </listen-socket>
+
+    <http-headers>
+        <header name="Access-Control-Allow-Origin" value="*" />
+        <header name="Access-Control-Allow-Headers" value="Origin, Accept, X-Requested-With, Content-Type, Icy-MetaData" />
+        <header name="Access-Control-Allow-Methods" value="GET, OPTIONS, HEAD" />
+    </http-headers>
+
+    <mount type="normal">
+        <mount-name>/ene-fm</mount-name>
+        <username>source</username>
+        <password>secret_stream_key_ene-fm</password>
+        <max-listeners>1000</max-listeners>
+        <bitrate>128</bitrate>
+        <type>audio/mpeg</type>
+        <subtype>mp3</subtype>
+        <burst-size>65535</burst-size>
+        <mp3-metadata-interval>16384</mp3-metadata-interval>
+    </mount>
+
+    <mount type="normal">
+        <mount-name>/ghetto-radio</mount-name>
+        <username>source</username>
+        <password>secret_stream_key_ghetto-radio</password>
+        <max-listeners>1000</max-listeners>
+        <bitrate>128</bitrate>
+        <type>audio/mpeg</type>
+        <subtype>mp3</subtype>
+        <burst-size>65535</burst-size>
+        <mp3-metadata-interval>16384</mp3-metadata-interval>
+    </mount>
+
+    <fileserve>1</fileserve>
+    <paths>
+        <basedir>/usr/share/icecast</basedir>
+        <logdir>/var/log/icecast</logdir>
+        <webroot>/usr/share/icecast/web</webroot>
+        <adminroot>/usr/share/icecast/admin</adminroot>
+    </paths>
+
+    <logging>
+        <accesslog>access.log</accesslog>
+        <errorlog>error.log</errorlog>
+        <loglevel>3</loglevel>
+    </logging>
+</icecast>

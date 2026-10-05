@@ -1,0 +1,11 @@
+# Git ignore for RadioWave Kenya
+node_modules/
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+*.docx
+deploy.zip
+unzip.php
+.env
