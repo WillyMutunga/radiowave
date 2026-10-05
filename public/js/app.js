@@ -123,13 +123,13 @@ const App = {
                 break;
 
             case 'station':
-                appContainer.innerHTML = `<div class="text-center py-20 text-gray-400">Loading station broadcast...</div>`;
+                appContainer.innerHTML = `<div class="text-center py-20 text-slate-500 font-medium">Loading station broadcast...</div>`;
                 try {
                     const res = await API.stations.detail(this.state.viewParam);
                     this.state.stationDetail = res.station;
                     appContainer.innerHTML = Components.renderStationDetails(res.station, this.state.activeStationTab);
                 } catch (e) {
-                    appContainer.innerHTML = `<div class="text-center py-20 text-red-400">Station not found.</div>`;
+                    appContainer.innerHTML = `<div class="text-center py-20 text-rose-600 font-semibold">Station not found.</div>`;
                 }
                 break;
 
@@ -142,7 +142,7 @@ const App = {
                     appContainer.innerHTML = Components.renderLoginPortal('station_admin');
                     break;
                 }
-                appContainer.innerHTML = `<div class="text-center py-20 text-gray-400">Loading station control room...</div>`;
+                appContainer.innerHTML = `<div class="text-center py-20 text-slate-500 font-medium">Loading station control room...</div>`;
                 try {
                     const stationId = this.state.user?.station_id || 1;
                     const [stRes, streamRes, subRes, reqRes, anaRes] = await Promise.all([
@@ -163,7 +163,7 @@ const App = {
                     );
                 } catch (e) {
                     console.error('Error loading station admin:', e);
-                    appContainer.innerHTML = `<div class="text-center py-20 text-red-400">Could not load station admin dashboard.</div>`;
+                    appContainer.innerHTML = `<div class="text-center py-20 text-rose-600 font-semibold">Could not load station admin dashboard.</div>`;
                 }
                 break;
 
@@ -172,7 +172,7 @@ const App = {
                     appContainer.innerHTML = Components.renderLoginPortal('presenter');
                     break;
                 }
-                appContainer.innerHTML = `<div class="text-center py-20 text-gray-400">Connecting to live on-air studio...</div>`;
+                appContainer.innerHTML = `<div class="text-center py-20 text-slate-500 font-medium">Connecting to live on-air studio...</div>`;
                 try {
                     const stationId = (this.state.viewParam && !isNaN(this.state.viewParam)) ? parseInt(this.state.viewParam) : (this.state.user?.station_id || 1);
                     const [stRes, progRes, reqRes] = await Promise.all([
@@ -188,7 +188,7 @@ const App = {
                         this.state.presenterRequestFilter || 'all'
                     );
                 } catch (e) {
-                    appContainer.innerHTML = `<div class="text-center py-20 text-red-400">Failed to connect to on-air studio.</div>`;
+                    appContainer.innerHTML = `<div class="text-center py-20 text-rose-600 font-semibold">Failed to connect to on-air studio.</div>`;
                 }
                 break;
 
@@ -197,7 +197,7 @@ const App = {
                     appContainer.innerHTML = Components.renderLoginPortal('super_admin');
                     break;
                 }
-                appContainer.innerHTML = `<div class="text-center py-20 text-gray-400">Loading operations center...</div>`;
+                appContainer.innerHTML = `<div class="text-center py-20 text-slate-500 font-medium">Loading operations center...</div>`;
                 try {
                     const [overview, pending, streams, audits] = await Promise.all([
                         API.admin.overview(),
@@ -213,7 +213,7 @@ const App = {
                         this.state.activeSuperAdminTab
                     );
                 } catch (e) {
-                    appContainer.innerHTML = `<div class="text-center py-20 text-red-400">Could not load super admin portal.</div>`;
+                    appContainer.innerHTML = `<div class="text-center py-20 text-rose-600 font-semibold">Could not load super admin portal.</div>`;
                 }
                 break;
 
@@ -222,28 +222,28 @@ const App = {
                 break;
 
             case 'podcasts':
-                appContainer.innerHTML = `<div class="text-center py-20 text-gray-400">Loading podcast catalog...</div>`;
+                appContainer.innerHTML = `<div class="text-center py-20 text-slate-500 font-medium">Loading podcast catalog...</div>`;
                 try {
                     const res = await API.podcasts.list();
                     appContainer.innerHTML = `
                         <div class="space-y-6 animate-fadeIn">
                             <div>
-                                <h1 class="text-3xl font-extrabold text-white">Kenyan Radio Podcasts & Shows</h1>
-                                <p class="text-sm text-gray-400">Catch up on missed morning shows, special interviews and exclusive audio series</p>
+                                <h1 class="text-3xl font-extrabold text-slate-900">Kenyan Radio Podcasts & Shows</h1>
+                                <p class="text-sm text-slate-500">Catch up on missed morning shows, special interviews and exclusive audio series</p>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 ${res.podcasts.map(pod => `
-                                    <div class="p-5 rounded-2xl bg-gray-900 border border-gray-800 space-y-4">
+                                    <div class="p-5 rounded-[18px] bg-white border border-slate-200/90 shadow-sm space-y-4">
                                         <div class="flex items-start gap-4">
-                                            <img src="${pod.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=200'}" class="w-20 h-20 rounded-xl object-cover border border-gray-700">
+                                            <img src="${pod.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=200'}" class="w-20 h-20 rounded-xl object-cover border border-slate-200">
                                             <div class="flex-1">
-                                                <span class="text-[10px] text-orange-400 uppercase font-bold bg-orange-500/10 px-2 py-0.5 rounded">${pod.category}</span>
-                                                <h3 class="text-base font-bold text-white mt-1">${pod.title}</h3>
-                                                <p class="text-xs text-gray-400 truncate">Station: ${pod.station_name}</p>
+                                                <span class="text-[10px] text-blue-700 uppercase font-bold bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">${pod.category}</span>
+                                                <h3 class="text-base font-bold text-slate-900 mt-1">${pod.title}</h3>
+                                                <p class="text-xs text-slate-500 truncate">Station: ${pod.station_name}</p>
                                             </div>
                                         </div>
-                                        <p class="text-xs text-gray-400 line-clamp-2">${pod.description}</p>
-                                        <button onclick="window.App.openPodcastEpisodes(${pod.id})" class="w-full py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-white transition">
+                                        <p class="text-xs text-slate-600 line-clamp-2">${pod.description}</p>
+                                        <button onclick="window.App.openPodcastEpisodes(${pod.id})" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-blue-600 text-xs font-semibold text-slate-700 hover:text-white transition cursor-pointer">
                                             Listen to Episodes (${pod.episode_count || 0})
                                         </button>
                                     </div>
@@ -255,20 +255,20 @@ const App = {
                 break;
 
             case 'favourites':
-                appContainer.innerHTML = `<div class="text-center py-20 text-gray-400">Loading your favourite stations...</div>`;
+                appContainer.innerHTML = `<div class="text-center py-20 text-slate-500 font-medium">Loading your favourite stations...</div>`;
                 try {
                     const res = await API.engagement.myFavourites();
                     const favs = res.favourites || [];
                     appContainer.innerHTML = `
                         <div class="space-y-6 animate-fadeIn">
                             <div>
-                                <h1 class="text-3xl font-extrabold text-white">My Favourites</h1>
-                                <p class="text-sm text-gray-400">Your personalized live radio presets</p>
+                                <h1 class="text-3xl font-extrabold text-slate-900">My Favourites</h1>
+                                <p class="text-sm text-slate-500">Your personalized live radio presets</p>
                             </div>
                             ${favs.length > 0 ? Components.renderHome(favs, [], [], {}) : `
-                                <div class="text-center py-16 bg-gray-900/40 rounded-2xl border border-gray-800">
-                                    <p class="text-gray-400 text-base">You haven't added any favourite stations yet.</p>
-                                    <button onclick="window.App.navigate('home')" class="mt-4 px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-semibold">
+                                <div class="text-center py-16 bg-white rounded-[18px] border border-slate-200 shadow-sm">
+                                    <p class="text-slate-500 text-base">You haven't added any favourite stations yet.</p>
+                                    <button onclick="window.App.navigate('home')" class="mt-4 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition cursor-pointer shadow-sm">
                                         Explore All Stations
                                     </button>
                                 </div>
@@ -276,7 +276,7 @@ const App = {
                         </div>
                     `;
                 } catch (e) {
-                    appContainer.innerHTML = `<div class="text-center py-16 text-gray-400">Please log in to view your saved favourite stations.</div>`;
+                    appContainer.innerHTML = `<div class="text-center py-16 text-slate-500">Please log in to view your saved favourite stations.</div>`;
                 }
                 break;
         }
@@ -294,29 +294,29 @@ const App = {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <!-- Logo -->
                 <div onclick="window.App.navigate('home')" class="flex items-center gap-3 cursor-pointer group">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:scale-105 transition transform">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/25 group-hover:scale-105 transition transform">
                         <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
                     </div>
                     <div>
-                        <div class="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-                            RadioWave <span class="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold">KENYA</span>
+                        <div class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-1.5">
+                            RadioWave <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-bold">KENYA</span>
                         </div>
-                        <span class="text-[10px] text-gray-400 block -mt-1 font-medium">Digital Radio & Distribution</span>
+                        <span class="text-[10px] text-slate-500 block -mt-1 font-medium">Digital Radio & Distribution</span>
                     </div>
                 </div>
 
                 <!-- Center Nav Links for Listeners -->
                 <div class="hidden md:flex items-center gap-1">
-                    <button onclick="window.App.navigate('home')" class="px-3.5 py-2 rounded-xl text-sm font-semibold transition ${this.state.currentView === 'home' ? 'text-orange-400 bg-gray-800' : 'text-gray-300 hover:text-white hover:bg-gray-900'}">
+                    <button onclick="window.App.navigate('home')" class="px-3.5 py-2 rounded-xl text-sm font-semibold transition ${this.state.currentView === 'home' ? 'text-blue-600 bg-blue-50 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
                         Discover
                     </button>
-                    <button onclick="window.App.navigate('podcasts')" class="px-3.5 py-2 rounded-xl text-sm font-semibold transition ${this.state.currentView === 'podcasts' ? 'text-orange-400 bg-gray-800' : 'text-gray-300 hover:text-white hover:bg-gray-900'}">
+                    <button onclick="window.App.navigate('podcasts')" class="px-3.5 py-2 rounded-xl text-sm font-semibold transition ${this.state.currentView === 'podcasts' ? 'text-blue-600 bg-blue-50 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
                         Podcasts
                     </button>
-                    <button onclick="window.App.navigate('favourites')" class="px-3.5 py-2 rounded-xl text-sm font-semibold transition ${this.state.currentView === 'favourites' ? 'text-orange-400 bg-gray-800' : 'text-gray-300 hover:text-white hover:bg-gray-900'}">
+                    <button onclick="window.App.navigate('favourites')" class="px-3.5 py-2 rounded-xl text-sm font-semibold transition ${this.state.currentView === 'favourites' ? 'text-blue-600 bg-blue-50 font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
                         Favourites
                     </button>
-                    <button onclick="window.App.navigate('onboarding')" class="px-3.5 py-2 rounded-xl text-sm font-semibold text-orange-400 hover:bg-orange-500/10 transition flex items-center gap-1.5">
+                    <button onclick="window.App.navigate('onboarding')" class="px-3.5 py-2 rounded-xl text-sm font-semibold text-blue-600 hover:bg-blue-50 transition flex items-center gap-1.5">
                         <span>+</span> Register Station
                     </button>
                 </div>
@@ -327,7 +327,7 @@ const App = {
                         <!-- Public Listener View: Broadcaster Login Button -->
                         <button 
                             onclick="window.App.openLoginModal()" 
-                            class="px-4 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 hover:border-orange-500/50 text-gray-200 hover:text-white text-xs font-bold transition flex items-center gap-2 shadow-sm"
+                            class="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 text-xs font-bold transition flex items-center gap-2 shadow-xs"
                         >
                             <span>🎙️</span>
                             <span>Broadcaster Portal</span>
@@ -335,21 +335,21 @@ const App = {
                     ` : `
                         <!-- Logged-in Broadcaster View: Direct Workspace Shortcut -->
                         ${user.role === 'station_admin' ? `
-                            <button onclick="window.App.navigate('station-admin')" class="px-3.5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-orange-500/20 transition">
+                            <button onclick="window.App.navigate('station-admin')" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition">
                                 <span>📻</span>
                                 <span class="hidden sm:inline">Station Control Room</span>
                             </button>
                         ` : ''}
 
                         ${user.role === 'presenter' ? `
-                            <button onclick="window.App.navigate('presenter-cockpit')" class="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-red-600/20 transition">
+                            <button onclick="window.App.navigate('presenter-cockpit')" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-600/20 transition">
                                 <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                                 <span>Live Studio DJ</span>
                             </button>
                         ` : ''}
 
                         ${user.role === 'super_admin' ? `
-                            <button onclick="window.App.navigate('super-admin')" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-purple-600/20 transition">
+                            <button onclick="window.App.navigate('super-admin')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-600/20 transition">
                                 <span>⚡</span>
                                 <span class="hidden sm:inline">Ops Center</span>
                             </button>
@@ -357,18 +357,18 @@ const App = {
 
                         <!-- User Profile Chip & Sign Out Button -->
                         <div class="flex items-center gap-2">
-                            <div class="flex items-center gap-2 bg-gray-900 border border-gray-800 py-1.5 px-3 rounded-2xl shadow-inner">
-                                <img src="${user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" class="w-6 h-6 rounded-full object-cover border border-gray-700">
+                            <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 py-1.5 px-3 rounded-2xl shadow-inner">
+                                <img src="${user.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}" class="w-6 h-6 rounded-full object-cover border border-slate-200">
                                 <div class="text-left leading-none">
-                                    <span class="text-xs font-bold text-gray-200 block">${user.name ? user.name.split(' ')[0] : 'DJ'}</span>
-                                    <span class="text-[9px] text-orange-400 font-mono uppercase font-bold">${(user.role || '').replace('_', ' ')}</span>
+                                    <span class="text-xs font-bold text-slate-900 block">${user.name ? user.name.split(' ')[0] : 'DJ'}</span>
+                                    <span class="text-[9px] text-blue-600 font-mono uppercase font-bold">${(user.role || '').replace('_', ' ')}</span>
                                 </div>
                             </div>
                             <button 
                                 type="button"
                                 onclick="window.App.handleLogout()" 
                                 title="Sign Out of Broadcaster Portal" 
-                                class="px-3 py-2 rounded-2xl bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                                class="px-3 py-2 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 hover:text-rose-700 text-xs font-bold transition flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
                             >
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                                 <span>Sign Out</span>
@@ -770,14 +770,14 @@ const App = {
         if (badge && icon && text && btn) {
             const isNowPlaying = Player.isPlaying && Player.currentStation?.id == station.id;
             badge.className = isNowPlaying 
-                ? 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30'
-                : 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-800 text-gray-400';
+                ? 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500';
             badge.textContent = isNowPlaying ? '● MONITOR ACTIVE' : '○ MONITOR MUTED';
             icon.textContent = isNowPlaying ? '⏸️' : '▶️';
             text.textContent = isNowPlaying ? 'Mute Studio Monitor' : 'Listen to Live On-Air Feed';
             btn.className = isNowPlaying
-                ? 'flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition transform active:scale-95 cursor-pointer'
-                : 'flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition transform active:scale-95 cursor-pointer';
+                ? 'flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition transform active:scale-95 cursor-pointer'
+                : 'flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition transform active:scale-95 cursor-pointer';
         }
     },
 
@@ -809,12 +809,12 @@ const App = {
         const micBtn = document.getElementById('studio-mic-btn');
         if (micBtn) {
             if (this.state.isMicLive) {
-                micBtn.className = 'px-4 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-xs font-black tracking-wide flex items-center gap-2 shadow-lg shadow-red-600/30 transition transform active:scale-95';
+                micBtn.className = 'px-4 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black tracking-wide flex items-center gap-2 shadow-lg shadow-rose-600/30 transition transform active:scale-95 cursor-pointer';
                 micBtn.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span><span id="studio-mic-text">MIC: LIVE ON AIR</span>';
                 this.showToast('🎙️ Studio Microphone is LIVE on Air!', 'success');
             } else {
-                micBtn.className = 'px-4 py-3 rounded-2xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-black tracking-wide flex items-center gap-2 border border-gray-700 transition transform active:scale-95';
-                micBtn.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span><span id="studio-mic-text">MIC: MUTED / OFF AIR</span>';
+                micBtn.className = 'px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-black tracking-wide flex items-center gap-2 border border-slate-700 transition transform active:scale-95 cursor-pointer';
+                micBtn.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span id="studio-mic-text">MIC: MUTED / OFF AIR</span>';
                 this.showToast('🔇 Studio Microphone Muted (Off Air).', 'warning');
             }
         }
@@ -976,42 +976,42 @@ const App = {
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'programme-modal';
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn';
             document.body.appendChild(modal);
         }
         modal.innerHTML = `
-            <div class="relative w-full max-w-lg rounded-3xl bg-gray-900 border border-gray-800 shadow-2xl p-7 space-y-5">
-                <button onclick="document.getElementById('programme-modal').remove()" class="absolute top-5 right-5 p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-800">
+            <div class="relative w-full max-w-lg rounded-[22px] bg-white border border-slate-200 shadow-2xl p-7 space-y-5">
+                <button onclick="document.getElementById('programme-modal').remove()" class="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer">
                     ✕
                 </button>
                 <div class="space-y-1">
-                    <h3 class="text-xl font-bold text-white">Add Radio Programme Slot</h3>
-                    <p class="text-xs text-gray-400">Schedule an on-air show for your station lineup</p>
+                    <h3 class="text-xl font-bold text-slate-900">Add Radio Programme Slot</h3>
+                    <p class="text-xs text-slate-500">Schedule an on-air show for your station lineup</p>
                 </div>
                 <form onsubmit="window.App.handleAddProgrammeSubmit(event, ${stationId})" class="space-y-4">
                     <div>
-                        <label class="text-xs font-bold text-gray-300 block mb-1">Programme Title *</label>
-                        <input type="text" name="title" required placeholder="e.g. The Evening Drive Show" class="w-full px-4 py-2.5 rounded-xl bg-gray-950 border border-gray-800 text-sm text-white focus:outline-none focus:border-orange-500 font-medium">
+                        <label class="text-xs font-bold text-slate-700 block mb-1">Programme Title *</label>
+                        <input type="text" name="title" required placeholder="e.g. The Evening Drive Show" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 font-medium">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs font-bold text-gray-300 block mb-1">Start Time (24h) *</label>
-                            <input type="time" name="start_time" value="16:00" required class="w-full px-4 py-2.5 rounded-xl bg-gray-950 border border-gray-800 text-sm text-white focus:outline-none focus:border-orange-500">
+                            <label class="text-xs font-bold text-slate-700 block mb-1">Start Time (24h) *</label>
+                            <input type="time" name="start_time" value="16:00" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-gray-300 block mb-1">End Time (24h) *</label>
-                            <input type="time" name="end_time" value="19:00" required class="w-full px-4 py-2.5 rounded-xl bg-gray-950 border border-gray-800 text-sm text-white focus:outline-none focus:border-orange-500">
+                            <label class="text-xs font-bold text-slate-700 block mb-1">End Time (24h) *</label>
+                            <input type="time" name="end_time" value="19:00" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
                         </div>
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-300 block mb-1">Broadcast Days</label>
-                        <input type="text" name="days_of_week" value="Mon,Tue,Wed,Thu,Fri" placeholder="e.g. Mon,Tue,Wed,Thu,Fri" class="w-full px-4 py-2.5 rounded-xl bg-gray-950 border border-gray-800 text-sm text-white focus:outline-none focus:border-orange-500">
+                        <label class="text-xs font-bold text-slate-700 block mb-1">Broadcast Days</label>
+                        <input type="text" name="days_of_week" value="Mon,Tue,Wed,Thu,Fri" placeholder="e.g. Mon,Tue,Wed,Thu,Fri" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-300 block mb-1">Description / Tagline</label>
-                        <textarea name="description" rows="2" placeholder="Summary of what the show covers..." class="w-full px-4 py-2 rounded-xl bg-gray-950 border border-gray-800 text-sm text-white focus:outline-none focus:border-orange-500"></textarea>
+                        <label class="text-xs font-bold text-slate-700 block mb-1">Description / Tagline</label>
+                        <textarea name="description" rows="2" placeholder="Summary of what the show covers..." class="w-full px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100"></textarea>
                     </div>
-                    <button type="submit" class="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm transition shadow-lg shadow-orange-500/25">
+                    <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition shadow-md shadow-blue-500/25 cursor-pointer">
                         Save Programme Schedule Slot
                     </button>
                 </form>
@@ -1052,10 +1052,10 @@ const App = {
 
         const toast = document.createElement('div');
         const bgColors = {
-            success: 'bg-green-600 text-white',
-            error: 'bg-red-600 text-white',
-            warning: 'bg-amber-600 text-white',
-            info: 'bg-gray-800 text-gray-100 border border-gray-700'
+            success: 'bg-emerald-600 text-white shadow-emerald-500/20',
+            error: 'bg-rose-600 text-white shadow-rose-500/20',
+            warning: 'bg-amber-500 text-slate-950 shadow-amber-500/20',
+            info: 'bg-slate-900 text-white shadow-slate-900/20 border border-slate-800'
         };
 
         toast.className = `toast px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 ${bgColors[type] || bgColors.info}`;

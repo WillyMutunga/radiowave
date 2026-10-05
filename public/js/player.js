@@ -391,11 +391,13 @@ const Player = {
         if (!playerBar) return;
 
         if (!this.currentStation) {
-            playerBar.classList.add('translate-y-full');
+            playerBar.classList.add('translate-y-36', 'opacity-0', 'pointer-events-none');
+            playerBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
             return;
         }
 
-        playerBar.classList.remove('translate-y-full');
+        playerBar.classList.remove('translate-y-36', 'opacity-0', 'pointer-events-none');
+        playerBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
 
         // Update station branding info
         const logo = document.getElementById('player-station-logo');
@@ -417,10 +419,10 @@ const Player = {
         if (routeBadge) {
             if (this.streamRoute === 'direct_cdn') {
                 routeBadge.innerText = 'DIRECT CDN';
-                routeBadge.className = 'px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 font-mono text-[9px] font-bold hidden sm:inline-block';
+                routeBadge.className = 'px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-mono text-[9px] font-bold border border-emerald-200 hidden sm:inline-block';
             } else {
                 routeBadge.innerText = 'SECURE PROXY';
-                routeBadge.className = 'px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono text-[9px] font-bold hidden sm:inline-block';
+                routeBadge.className = 'px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 font-mono text-[9px] font-bold border border-blue-200 hidden sm:inline-block';
             }
         }
 
@@ -462,9 +464,9 @@ const Player = {
         if (slider) slider.value = this.isMuted ? 0 : this.volume * 100;
         if (icon) {
             if (this.isMuted || this.volume === 0) {
-                icon.innerHTML = `<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>`;
+                icon.innerHTML = `<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>`;
             } else {
-                icon.innerHTML = `<svg class="w-5 h-5 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>`;
+                icon.innerHTML = `<svg class="w-5 h-5 text-slate-500 hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>`;
             }
         }
     },
