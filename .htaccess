@@ -1,18 +1,25 @@
-# RadioWave Kenya - HostPinnacle cPanel Apache Configuration
+# RadioWave Kenya - Production Configuration for LiteSpeed & Apache
+DirectoryIndex index.php index.html
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
-    # 1. Block direct access to sensitive backend files and database
+    # 1. Block direct access to sensitive backend directories and config files
     RewriteRule ^backend/(data|config|src)/.*$ - [F,L]
     RewriteRule ^\.env.*$ - [F,L]
     RewriteRule ^\.git.*$ - [F,L]
 
-    # 2. Serve public static assets directly if they exist
-    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
-    RewriteRule ^(.*)$ public/$1 [L]
+    # 2. If the request is for an existing file or directory in root, serve directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
-    # 3. Route all other requests and API endpoints to index.php
+    # 3. If file exists in /public, rewrite to public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(css|js|images|uploads)/(.*)$ public/$1/$2 [L]
+
+    # 4. Route everything else (API and SPA routes) to index.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php [QSA,L]
