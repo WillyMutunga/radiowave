@@ -50,6 +50,11 @@ class Database {
                     ]);
 
                     self::createPostgresTables();
+
+                    // Auto-seed on first run if database is fresh
+                    if (class_exists(__NAMESPACE__ . '\\SeedData')) {
+                        SeedData::run(false);
+                    }
                 } elseif ($driver === 'sqlite') {
                     $dbPath = $dbConfig['sqlite_path'];
                     $isNew = !file_exists($dbPath);

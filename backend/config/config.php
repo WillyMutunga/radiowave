@@ -51,8 +51,8 @@ return [
         'sqlite_path' => DATA_DIR . '/radiowave.sqlite',
         'host' => getenv('DB_HOST') ?: '127.0.0.1',
         'port' => getenv('DB_PORT') ?: '5432',
-        'dbname' => getenv('DB_NAME') ?: 'radio',
-        'user' => getenv('DB_USER') ?: 'postgres',
+        'dbname' => getenv('DB_NAME') ?: 'radiowav_radio',
+        'user' => getenv('DB_USER') ?: 'radiowav_Willy',
         'password' => getenv('DB_PASS') ?: 'William#20',
         'charset' => getenv('DB_CHARSET') ?: 'utf8'
     ],
