@@ -62,6 +62,60 @@ const App = {
         await this.renderCurrentView();
     },
 
+    async loadMetadata() {
+        try {
+            const res = await API.stations.meta();
+            if (res) {
+                this.state.counties = res.counties || [];
+                this.state.genres = res.genres || [];
+            }
+        } catch (e) {
+            console.warn('Could not load station metadata:', e);
+            this.state.counties = ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Machakos', 'Kiambu', 'Uasin Gishu', 'Nyeri', 'Meru', 'Kilifi', 'Kakamega', 'Kajiado'];
+            this.state.genres = ['Urban / Hit Music', 'News & Current Affairs', 'Vernacular / Cultural', 'Gospel & Spiritual', 'Afrobeats & Reggae', 'Sports & Talk'];
+        }
+    },
+
+    async loadStations() {
+        try {
+            const params = {};
+            if (this.state.filters.county) params.county = this.state.filters.county;
+            if (this.state.filters.genre) params.genre = this.state.filters.genre;
+            if (this.state.filters.search) params.search = this.state.filters.search;
+            
+            const res = await API.stations.list(params);
+            this.state.stations = res.stations || [];
+        } catch (e) {
+            console.error('Could not load stations:', e);
+            this.state.stations = [];
+            this.showToast('Could not reach station database. Retrying...', 'error');
+        }
+    },
+
+    startLivePolling() {
+        if (this.state.pollingTimer) clearInterval(this.state.pollingTimer);
+        this.state.pollingTimer = setInterval(async () => {
+            if (this.state.currentView === 'home') {
+                try {
+                    const params = {};
+                    if (this.state.filters.county) params.county = this.state.filters.county;
+                    if (this.state.filters.genre) params.genre = this.state.filters.genre;
+                    if (this.state.filters.search) params.search = this.state.filters.search;
+                    const res = await API.stations.list(params);
+                    if (res && res.stations) {
+                        this.state.stations = res.stations;
+                        res.stations.forEach(st => {
+                            const trackEl = document.getElementById(`station-track-${st.id}`);
+                            if (trackEl && st.now_track) {
+                                trackEl.textContent = `${st.now_track} ${st.now_artist ? '• ' + st.now_artist : ''}`;
+                            }
+                        });
+                    }
+                } catch (e) {}
+            }
+        }, 15000);
+    },
+
     handleHashRoute() {
         const hash = window.location.hash.replace(/^#\/?/, '');
         if (!hash) {

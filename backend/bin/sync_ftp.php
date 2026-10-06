@@ -55,10 +55,20 @@ foreach ($files_to_sync as $local_rel => $remote_rel) {
     }
     
     echo "Uploading $local_rel -> $remote_rel... ";
-    if (ftp_put($conn_id, $remote_rel, $local_path, FTP_BINARY)) {
-        echo "OK (" . filesize($local_path) . " bytes)\n";
-    } else {
-        echo "FAILED\n";
+    $uploaded = false;
+    for ($attempt = 1; $attempt <= 3; $attempt++) {
+        if (@ftp_put($conn_id, $remote_rel, $local_path, FTP_BINARY)) {
+            echo "OK (" . filesize($local_path) . " bytes)\n";
+            $uploaded = true;
+            break;
+        } else {
+            if ($attempt < 3) {
+                sleep(1);
+            }
+        }
+    }
+    if (!$uploaded) {
+        echo "FAILED after 3 attempts\n";
     }
 }
 

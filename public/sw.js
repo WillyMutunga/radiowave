@@ -1,7 +1,7 @@
 // public/sw.js
 // Service Worker for RadioWave Kenya PWA Offline Shell & Asset Caching
 
-const CACHE_NAME = 'radiowave-cache-v3.1';
+const CACHE_NAME = 'radiowave-cache-v3.2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
